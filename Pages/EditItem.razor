@@ -1,0 +1,88 @@
+@page "/items/add/{id}"
+@page "/items/add"
+
+<PageTitle>Items</PageTitle>
+
+@using BlazorServerApp.Data
+@using BlazorServerApp.Data.Models
+@inject NavigationManager NavigationManager;
+@inject IJSRuntime JsRuntime
+    
+
+<p>Product name </p><input type="text" @bind="@Name">
+<p></p>
+<p>Product sku</p><input type="text" @bind="@Sku">
+<p></p>
+
+<p>Product price</p><input type="text" @bind="@Price">
+<p></p>
+
+<p>Product category</p><input type="text" @bind="@Category">
+
+<p><button class="btn btn-primary" @onclick="@Edit">Add</button></p>
+
+@code{
+
+    [Parameter]
+    public string? Id { get; set; }
+
+    private string Name { get; set; } = "";
+    private string Sku { get; set; } = "";
+    private float Price { get; set; } = 0;
+    private string Category { get; set; } = "";
+
+    protected override void OnInitialized()
+    {
+        if (Id != null)
+        {
+            var db = DataContext.GetInstance();
+            var item = db.Items.Find(Int32.Parse(Id));
+            if (item != null)
+            {
+                Name = item.Name;
+                Sku = item.Sku;
+                Price = item.Price;
+                Category = item.Category;
+            }
+        }
+    }
+
+    async public void Edit()
+    {
+        Item item;
+        var db = DataContext.GetInstance();
+        if (Name == "" || Sku == "" || Price == 0 || Category == "")
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Incorrect data!");
+            return;
+        }
+        if (Id != null)
+        {
+            item = db.Items.Find(Int32.Parse(Id));
+        }
+        else
+        {
+            item = new Item();
+        }
+        
+        if (item != null)
+        {
+            item.Name = Name;
+            item.Sku = Sku;
+            item.Price = Price;
+            item.Category = Category;
+            if (Id != null)
+                db.Items.Attach(item);
+            else 
+                db.Items.Add(item);
+
+            await JsRuntime.InvokeVoidAsync("alert", "Success!");
+        }
+        else
+            await JsRuntime.InvokeVoidAsync("alert", "Bad item id");
+        
+        db.SaveChanges();
+
+    }
+    
+    } 

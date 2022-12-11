@@ -1,0 +1,94 @@
+@page "/customers/add/{id}"
+@page "/customers/add"
+
+<PageTitle>Customers</PageTitle>
+
+@using BlazorServerApp.Data
+@using BlazorServerApp.Data.Models
+@inject NavigationManager NavigationManager;
+@inject IJSRuntime JsRuntime
+    
+
+<p>Customers name </p><input type="text" @bind="@Name">
+<p></p>
+<p>Customers email</p><input type="text" @bind="@Email">
+<p></p>
+
+<p>Customers price</p><input type="text" @bind="@Age">
+<p></p>
+
+<p>Customers category</p><input type="text" @bind="@Address">
+
+<p><button class="btn btn-primary" @onclick="@Edit">Add</button></p>
+
+@code{
+
+    [Parameter]
+    public string? Id { get; set; }
+
+    private string Name { get; set; } = "";
+    private string Email { get; set; } = "";
+    private int? Age { get; set; }
+    private string Address { get; set; } = "";
+
+    protected override void OnInitialized()
+    {
+        if (Id != null)
+        {
+            var db = DataContext.GetInstance();
+            var item = db.Customers.Find(Int32.Parse(Id));
+            if (item != null)
+            {
+                Name = item.Name;
+                Email = item.Email;
+                Age = item.Age;
+                Address = item.Address;
+            }
+        }
+    }
+
+    async public void Edit()
+    {
+        Customer item;
+        var db = DataContext.GetInstance();
+        if (Name == "" || Email == "" || Age == null || Address == "")
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Incorrect data!");
+            return;
+
+        }
+        if (Age < 10)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Wrong age!");
+            return;
+        }
+        if (Id != null)
+        {
+            item = db.Customers.Find(Int32.Parse(Id));
+        }
+        else
+        {
+            item = new Customer();
+        }
+        
+        if (item != null)
+        {
+            item.Name = Name;
+            item.Email = Email;
+            item.Age = Age.Value;
+            item.Address = Address;
+            if (Id != null)
+                db.Customers.Attach(item);
+            else 
+                db.Customers.Add(item);
+
+            await JsRuntime.InvokeVoidAsync("alert", "Success!");
+        }
+        else
+            await JsRuntime.InvokeVoidAsync("alert", "Bad item id");
+        
+        db.SaveChanges();
+
+    }
+    
+    } 

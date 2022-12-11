@@ -1,0 +1,127 @@
+@page "/orders/add/{id}"
+@page "/orders/add"
+
+<PageTitle>Customers</PageTitle>
+
+@using BlazorServerApp.Data
+@using BlazorServerApp.Data.Models
+@inject IJSRuntime JsRuntime
+    
+
+<p>Customer</p><select>
+    <option value="0" onclick="@(()=>SetCustomerId(0))">None</option>
+    @foreach (var customer in CustomersList)
+    {
+        <option value="@customer.Id" onclick="@(()=>SetCustomerId(customer.Id))">@CustOutput(customer)</option>
+    }
+</select>
+<p></p>
+<p>Item</p><select>
+    <option value="0" onclick="@(()=>@SetItemId(0))">None</option>
+    @foreach (var item in ItemsList)
+    {
+        <option value="@item.Id" onclick="@(()=>@SetItemId(item.Id))">@ItemOutput(item)</option>
+    }
+</select><p></p>
+
+<p>Quantity of items</p>
+<p><input type="text" @bind="Quantity"></p>
+<p></p>
+
+<p><button class="btn btn-primary" @onclick="@Edit">Add</button></p>
+
+@code{
+
+    [Parameter]
+    public string? Id { get; set; }
+
+    public int? Quantity { get; set; }
+    public int? CustomerId { get; set; }
+    public int? ItemId { get; set; }
+    public List<Customer> CustomersList { get; set; }
+    public List<Item> ItemsList { get; set; }
+
+
+    private void SetItemId(int id)
+    {
+        ItemId = id;
+    }
+    private void SetCustomerId(int id)
+    {
+        CustomerId = id;
+    }
+        
+    private string CustOutput(Customer customer)
+    {
+        return $"{customer.Id} : {customer.Name}";
+    }
+
+    private string ItemOutput(Item item)
+    {
+        return $"{item.Sku} : {item.Price}";
+    }
+    
+    protected override void OnInitialized()
+    {
+        var db = DataContext.GetInstance();
+        CustomersList = db.Customers.ToList();
+        ItemsList = db.Items.ToList();
+        if (Id != null)
+        {
+            var item = db.Orders.Find(Int32.Parse(Id));
+            if (item != null)
+            {
+                CustomerId = item.CustomerId;
+                ItemId = item.ItemId;
+                Quantity = item.Quantity;
+            }
+
+        }
+    }
+
+    async public void Edit()
+    {
+        Order item;
+        var db = DataContext.GetInstance();
+        if (CustomerId == null || ItemId == null || Quantity == 0 || CustomerId == 0 || ItemId == 0)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Incorrect data!");
+            return;
+        }
+        if (Id != null)
+        {
+            item = db.Orders.Find(Int32.Parse(Id));
+        }
+        else
+            item = new Order();
+        if (item != null)
+        {
+            if (CustomerId != null)
+                item.CustomerId = CustomerId.Value;
+            if (ItemId != null)
+                item.ItemId = ItemId.Value;
+            if (Quantity != null)
+                item.Quantity = Quantity.Value;
+        }
+        else{                
+            await JsRuntime.InvokeVoidAsync("alert", "Bad item id");
+            return;
+        }
+        
+        if (Id != null)
+        {
+            db.Orders.Attach(item);
+        }
+        else
+        {
+            db.Orders.Add(item);
+
+        }
+
+        db.SaveChanges();
+        await JsRuntime.InvokeVoidAsync("alert", "Succes!");
+
+
+    }
+    
+    } 

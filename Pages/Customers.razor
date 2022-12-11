@@ -1,4 +1,4 @@
-@page "/items"
+@page "/customers"
 
 <PageTitle>Items</PageTitle>
 
@@ -8,16 +8,16 @@
 @inject IJSRuntime JsRuntime
 
 
-<h1>Items</h1>
+<h1>Customers</h1>
 
 <table class="table">
     <thead>
     <tr>
         <th>Id</th>
         <th>Name</th>
-        <th>Sku</th>
-        <th>Price</th>
-        <th>Category</th>
+        <th>Email</th>
+        <th>Age</th>
+        <th>Address</th>
     </tr>
     </thead>
     <tbody>
@@ -26,9 +26,9 @@
     <tr>
         <td>@item.Id</td>
         <td>@item.Name</td>
-        <td>@item.Sku</td>
-        <td>@item.Price</td>
-        <td>@item.Category</td>
+        <td>@item.Email</td>
+        <td>@item.Age</td>
+        <td>@item.Address</td>
         <input type="radio"  name="id" onchange="@(()=>@SetId(item.Id))" value="@item.Id">
     </tr>
     }
@@ -39,14 +39,14 @@
 <button class="btn btn-primary" onclick="@Delete">Delete</button>
 <p></p>
 <h3>Search</h3>
-<input type="text" @bind="@Id" placeholder="Product id">
-<input type="text" @bind="@Name" placeholder="Product name">
+<input type="text" @bind="@Id" placeholder="Customer id">
+<input type="text" @bind="@Name" placeholder="Customer name">
 
-<input type="text" @bind="@Sku" placeholder="Product sku">
+<input type="text" @bind="@Email" placeholder="Email">
 
-<input type="text" @bind="@Price" placeholder="Product price">
+<input type="text" @bind="@Age" placeholder="Age">
 
-<input type="text" @bind="@Category" placeholder="Product category">
+<input type="text" @bind="@Address" placeholder="Address">
 
 <p><button class="btn btn-primary" @onclick="@Search">Search</button>
     <button class="btn btn-primary" @onclick="@Reset">Reset</button></p>
@@ -54,12 +54,12 @@
 @code {
     private int? Id { get; set; }
     private string Name { get; set; } = "";
-    private string Sku { get; set; } = "";
-    private float? Price { get; set; }
-    private string Category { get; set; } = "";
-    
+    private string Email { get; set; } = "";
+    private int? Age { get; set; }
+    private string Address { get; set; } = "";
+
     int id = 0;
-    private List<Item> ItemsList { get; set; }
+    private List<Customer> ItemsList { get; set; }
 
     private void SetId(int data)
     {
@@ -69,9 +69,8 @@
     public void Search()
     {
         var db = DataContext.GetInstance();
-        ItemsList = db.Items.ToList();
-        var c = new Customer();
-        List < Item > items = new List<Item>();
+        ItemsList = db.Customers.ToList();
+        List < Customer > items = new List<Customer>();
         if (Id != null || Id.ToString() != "")
         {
             items = ItemsList.Where(x=>x.Id == Id).ToList();
@@ -82,32 +81,32 @@
             items = ItemsList.Where(x => x.Name.Contains(Name)).ToList();
             ItemsList = items;
         }
-        if (Sku != "")
+        if (Email != "")
         {
-            items = ItemsList.Where(x => x.Sku.Contains(Sku)).ToList();
+            items = ItemsList.Where(x => x.Email.Contains(Email)).ToList();
             ItemsList = items;
         }
-        if (Price != null || Price.ToString() != "")
+        if (Age != null || Age.ToString() != "")
         {
-            items = ItemsList.Where(x => x.Price == Price).ToList();
+            items = ItemsList.Where(x => x.Age == Age).ToList();
             ItemsList = items;
         }
-        if (Category != "")
+        if (Address != "")
         {
-            items = ItemsList.Where(x => x.Category.Contains(Category)).ToList();
+            items = ItemsList.Where(x => x.Address.Contains(Address)).ToList();
             ItemsList = items;
         }
-        
+
     }
     public void Reset()
     {
         var db = DataContext.GetInstance();
-        ItemsList = db.Items.ToList();
+        ItemsList = db.Customers.ToList();
         Id = null;
-        Price = null;
+        Age = null;
         Name = "";
-        Sku = "";
-        Category = "";
+        Email = "";
+        Address = "";
     }
 
     public void Add()
@@ -134,22 +133,22 @@
             return;
         }
         var db = DataContext.GetInstance();
-        var item = db.Items.Find(id);
+        var item = db.Customers.Find(id);
         if (item != null)
-            db.Items.Remove(item);
+            db.Customers.Remove(item);
         db.SaveChanges();
         HandleClick();
     }
     protected override async Task OnInitializedAsync()
     {
         var db = DataContext.GetInstance();
-        ItemsList = db.Items.ToList();
+        ItemsList = db.Customers.ToList();
 
     }
     private void HandleClick()
     {
         // NavigationManager.NavigateTo("items", true);
         var db = DataContext.GetInstance();
-        ItemsList = db.Items.ToList();
+        ItemsList = db.Customers.ToList();
     }
 }
