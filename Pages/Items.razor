@@ -1,0 +1,58 @@
+@page "/items"
+
+<PageTitle>Weather forecast</PageTitle>
+
+@using BlazorServerApp.Data
+@using BlazorServerApp.Data.Models
+@inject WeatherForecastService ForecastService
+
+<h1>Weather forecast</h1>
+
+<p>This component demonstrates fetching data from a service.</p>
+<table class="table">
+    <thead>
+    <tr>
+        <th>Id</th>
+        <th>Name</th>
+        <th>Sku</th>
+        <th>Price</th>
+        <th>Category</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in items)
+    {
+    <tr>
+        <td>@item.Id</td>
+        <td>@item.Name</td>
+        <td>@item.Sku</td>
+        <td>@item.Price</td>
+        <td>@item.Category</td>
+        <button class="btn btn-primary" href="/edit/@{item.Id}"> Edit </button>
+        <button class="btn btn-primary" onclick="@"> Delete</button>
+    </tr>
+    }
+    </tbody>
+</table>
+<button class="btn btn-primary" href="/add">Add</button>
+<button class="btn btn-primary">laslal</button>
+<button class="btn btn-primary">laslal</button>
+<button class="btn btn-primary">laslal</button>
+
+
+@code {
+    private List<Item> items = new List<Item>();
+
+    private void Delete()
+    {
+        var db = DataContext.GetInstance();
+        
+    }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        var db = DataContext.GetInstance();
+        items = db.Items.ToList();
+
+    }
+}
